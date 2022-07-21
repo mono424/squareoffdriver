@@ -43,7 +43,7 @@ class SquareOff {
   }
 
   void _handleInputStream(List<int> chunk) {
-    // print("R > " + chunk.map((n) => String.fromCharCode(n & 127)).toString());
+    print("R > " + chunk.map((n) => String.fromCharCode(n & 127)).toString());
     if (_buffer == null) {
       _buffer = chunk.toList();
     } else {
