@@ -62,8 +62,8 @@ class SquareOff {
     do {
       try {
         SquareOffMessage message = SquareOffMessage.parse(_buffer);
-        _inputStreamController.add(message);
         _buffer.removeRange(0, message.getLength());
+        _inputStreamController.add(message);
         // print("[IMessage] valid (" + message.getCode() + ")");
       } on SquareOffInvalidMessageException catch (e) {
         skipBadBytes(e.skipBytes, _buffer);
