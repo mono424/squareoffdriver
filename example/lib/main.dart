@@ -9,6 +9,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:squareoffdriver/SquareOff.dart';
 import 'package:squareoffdriver/SquareOffCommunicationClient.dart';
+import 'package:squareoffdriver/protocol/model/GameEvent.dart';
 import 'package:squareoffdriver/protocol/model/PieceUpdate.dart';
 
 void main() {
@@ -110,19 +111,19 @@ class _MyHomePageState extends State<MyHomePage> {
           }
         }
 
-        SquareOffCommunicationClient chessnutCommuniChessnutCommunicationClient = SquareOffCommunicationClient(
+        SquareOffCommunicationClient squareOffCommunicationClient = SquareOffCommunicationClient(
           (v) => flutterReactiveBle.writeCharacteristicWithResponse(write, value: v),
         );
         boardBtInputStream = flutterReactiveBle
             .subscribeToCharacteristic(read)
             .listen((list) {
-              chessnutCommuniChessnutCommunicationClient.handleReceive(Uint8List.fromList(list));
+              squareOffCommunicationClient.handleReceive(Uint8List.fromList(list));
             });
           
         // connect to board and initialize
         SquareOff nBoard = SquareOff();
-        await nBoard.init(chessnutCommuniChessnutCommunicationClient);
-        print("chessnutBoard connected");
+        await nBoard.init(squareOffCommunicationClient);
+        print("squareOffBoard connected");
 
         // set connected board
         setState(() {
@@ -159,12 +160,13 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void testLeds() async {
-    // LEDPattern pattern;
-    // for (var square in ChessnutProtocol.squares) {
-    //   pattern = LEDPattern();
-    //   pattern.setSquare(square, true);
-    //   await connectedBoard.setLEDs(pattern);
-    // }
+    List<String> squares = [];
+    for (var square in SquareOff.squares) {
+      squares.add(square);
+      while (squares.length > 4) squares.removeAt(0);
+      await connectedBoard.setLeds(squares);
+    }
+    await connectedBoard.setLeds([]);
   }
 
   @override
@@ -192,6 +194,41 @@ class _MyHomePageState extends State<MyHomePage> {
               TextButton(
                 child: Text("Test LEDS"),
                 onPressed: !loading && connectedBoard != null ? testLeds : null
+              ),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextButton(
+                child: Text("White won"),
+                onPressed: !loading && connectedBoard != null ? () => connectedBoard.triggerGameEvent(GameEvent.whiteWins) : null
+              ),
+              TextButton(
+                child: Text("Black won"),
+                onPressed: !loading && connectedBoard != null ? () => connectedBoard.triggerGameEvent(GameEvent.blackWins) : null
+              ),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextButton(
+                child: Text("King in Check"),
+                onPressed: !loading && connectedBoard != null ? () => connectedBoard.triggerGameEvent(GameEvent.kingInCheck) : null
+              ),
+              TextButton(
+                child: Text("Draw"),
+                onPressed: !loading && connectedBoard != null ? () => connectedBoard.triggerGameEvent(GameEvent.draw) : null
+              ),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextButton(
+                child: Text("Get Board"),
+                onPressed: !loading && connectedBoard != null ? () => connectedBoard.getBoard() : null
               ),
             ],
           ),

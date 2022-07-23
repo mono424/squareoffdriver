@@ -2,7 +2,13 @@ import 'dart:async';
 import 'package:squareoffdriver/SquareOffCommunicationClient.dart';
 import 'package:squareoffdriver/SquareOffMessage.dart';
 import 'package:squareoffdriver/protocol/commands/FieldUpdate.dart';
+import 'package:squareoffdriver/protocol/commands/GetBoard.dart';
 import 'package:squareoffdriver/protocol/commands/NewGame.dart';
+import 'package:squareoffdriver/protocol/commands/RequestBattery.dart';
+import 'package:squareoffdriver/protocol/commands/SetLeds.dart';
+import 'package:squareoffdriver/protocol/commands/TriggerGameEvent.dart';
+import 'package:squareoffdriver/protocol/model/BatteryStatus.dart';
+import 'package:squareoffdriver/protocol/model/GameEvent.dart';
 import 'package:squareoffdriver/protocol/model/PieceUpdate.dart';
 import 'package:squareoffdriver/protocol/model/RequestConfig.dart';
 
@@ -15,17 +21,16 @@ class SquareOff {
   List<int> _buffer;
   String _version;
 
-  static List<String> RANKS = ["a", "b", "c", "d", "e", "f", "g", "h"];
-  static List<String> ROWS = ["1", "2", "3", "4", "5", "6", "7", "8"];
-  static get SQUARES {
-    List<String> squares = [];
-    for (var row in ROWS) {
-      for (var rank in RANKS.reversed.toList()) {
-        squares.add(rank + row);
-      }
-    }
-    return squares;
-  }
+  static List<String> squares = [
+    'a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'a8',
+    'b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'b7', 'b8',
+    'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8',
+    'd1', 'd2', 'd3', 'd4', 'd5', 'd6', 'd7', 'd8',
+    'e1', 'e2', 'e3', 'e4', 'e5', 'e6', 'e7', 'e8',
+    'f1', 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8',
+    'g1', 'g2', 'g3', 'g4', 'g5', 'g6', 'g7', 'g8',
+    'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8'
+  ];
 
   String get version => _version;
 
@@ -90,6 +95,22 @@ class SquareOff {
 
   Future<bool> newGame({ RequestConfig config = const RequestConfig(0, const Duration(minutes: 5)) }) {
     return NewGame().request(_client, _inputStream, config);
+  }
+
+  Future<Map<String, bool>> getBoard({ RequestConfig config = const RequestConfig(0, const Duration(minutes: 5)) }) {
+    return GetBoard().request(_client, _inputStream, config);
+  }
+
+  Future<BatteryStatus> getBatteryStatus({ RequestConfig config = const RequestConfig(0, const Duration(minutes: 5)) }) {
+    return RequestBattery().request(_client, _inputStream, config);
+  }
+
+  Future<void> setLeds(List<String> squares) {
+    return SetLeds(squares).send(_client);
+  }
+
+  Future<void> triggerGameEvent(GameEvent event) {
+    return TriggerGameEvent(event).send(_client);
   }
 
 }
