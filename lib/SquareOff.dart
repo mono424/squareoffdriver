@@ -62,7 +62,7 @@ class SquareOff {
     do {
       try {
         SquareOffMessage message = SquareOffMessage.parse(_buffer);
-        _buffer.removeRange(0, message.getLength());
+        _buffer.removeRange(0, message.getLength() - 1);
         _inputStreamController.add(message);
         // print("[IMessage] valid (" + message.getCode() + ")");
       } on SquareOffInvalidMessageException catch (e) {
@@ -72,7 +72,8 @@ class SquareOff {
         // wait longer
         break;
       } catch (err) {
-        // print("Unknown parse-error: " + err.toString());
+        print("Unknown parse-error: " + err.toString());
+        _buffer = [];
         break;
       }
     } while (_buffer.length > 0);
@@ -93,15 +94,22 @@ class SquareOff {
         .map((SquareOffMessage msg) => FieldUpdateAnswer().process(msg.getMessage()));
   }
 
-  Future<bool> newGame({ RequestConfig config = const RequestConfig(0, const Duration(minutes: 5)) }) {
+  Stream<Map<String, bool>> getBoardUpdateStream() {
+    return getInputStream()
+        .where(
+            (SquareOffMessage msg) => msg.getCode() == BoardStateMessage().code)
+        .map((SquareOffMessage msg) => BoardStateMessage().process(msg.getMessage()));
+  }
+
+  Future<bool> newGame({ RequestConfig config = const RequestConfig(0, const Duration(seconds: 5)) }) {
     return NewGame().request(_client, _inputStream, config);
   }
 
-  Future<Map<String, bool>> getBoard({ RequestConfig config = const RequestConfig(0, const Duration(minutes: 5)) }) {
+  Future<Map<String, bool>> getBoard({ RequestConfig config = const RequestConfig(0, const Duration(seconds: 5)) }) {
     return GetBoard().request(_client, _inputStream, config);
   }
 
-  Future<BatteryStatus> getBatteryStatus({ RequestConfig config = const RequestConfig(0, const Duration(minutes: 5)) }) {
+  Future<BatteryStatus> getBatteryStatus({ RequestConfig config = const RequestConfig(0, const Duration(seconds: 5)) }) {
     return RequestBattery().request(_client, _inputStream, config);
   }
 

@@ -5,10 +5,10 @@ import 'package:squareoffdriver/protocol/Command.dart';
 class GetBoard extends Command<Map<String, bool>> {
   final String code = "30";
   final String body = "R";
-  final Answer<Map<String, bool>> answer = GetBoardReady();
+  final Answer<Map<String, bool>> answer = BoardStateMessage();
 }
 
-class GetBoardReady extends Answer<Map<String, bool>> {
+class BoardStateMessage extends Answer<Map<String, bool>> {
   final String code = "30";
 
   @override

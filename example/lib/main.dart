@@ -87,6 +87,9 @@ class _MyHomePageState extends State<MyHomePage> {
     ).listen((e) async {
       print(e);
       if (e.connectionState == DeviceConnectionState.connected) {
+
+        int mtu = await flutterReactiveBle.requestMtu(deviceId: deviceId, mtu: 100);
+        print(mtu);
         List<DiscoveredService> services = await flutterReactiveBle.discoverServices(e.deviceId);
 
         QualifiedCharacteristic read;
@@ -139,7 +142,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  Map<String, String> lastData;
+  Map<String, bool> lastData;
 
   // LEDPattern ledpattern = LEDPattern();
 
@@ -233,18 +236,18 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
           Center( child: StreamBuilder(
-            stream: connectedBoard?.getFieldUpdateStream(),
-            builder: (context, AsyncSnapshot<FieldUpdate> snapshot) {
+            stream: connectedBoard?.getBoardUpdateStream(),
+            builder: (context, AsyncSnapshot<Map<String, bool>> snapshot) {
               if (!snapshot.hasData && lastData == null) return Text("- no data -");
 
-              Map<String, String> fieldUpdate = snapshot.data ?? lastData;
+              Map<String, bool> fieldUpdate = snapshot.data ?? lastData;
               lastData = fieldUpdate;
               List<Widget> rows = [];
               
-              for (var i = 0; i < 8; i++) {
+              for (var j = 7; j >= 0; j--) {
                 List<Widget> cells = [];
-                for (var j = 0; j < 8; j++) {
-                    MapEntry<String, String> entry = fieldUpdate.entries.toList()[i * 8 + j];
+                for (var i = 0; i < 8; i++) {
+                    MapEntry<String, bool> entry = fieldUpdate.entries.toList()[i * 8 + j];
                     cells.add(
                       TextButton(
                         onPressed: () => toggleLed(entry.key),
@@ -266,7 +269,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(entry.key, style: TextStyle(color: Colors.white)),
-                                Text(entry.value ?? ".", style: TextStyle(color: Colors.white, fontSize: 8)),
+                                Text(entry.value ? "P" : "-", style: TextStyle(color: Colors.white, fontSize: 8)),
                               ],
                             )
                           ),
