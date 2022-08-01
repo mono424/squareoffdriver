@@ -13,6 +13,6 @@ class BatteryStatusAnswer extends Answer<BatteryStatus> {
 
   @override
   BatteryStatus process(String msg) {
-    return BatteryStatus(double.parse(msg.split("#")[1]));
+    return BatteryStatus(double.parse(msg.split("#")[1].replaceAll("*", "")));
   }
 }
